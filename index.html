@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Esteban Zia thao les cités d'or</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/moment.js/2.13.0/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.bundle.js"></script>
+    <script src="./utils.js"></script>
+</head>
+
+<body>
+    <h3>Nom du joueur</h3><input oninput="bernard()" id="select2" list="select">
+    <datalist id="select">
+    </datalist>
+    <div style="width:75%;">
+        <canvas id="canvas"></canvas>
+    </div>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $.ajax({
+                url: "get_golfeur.php",
+                method: "GET",
+                success: function (data) {
+                    options = "";
+                    data = JSON.parse(data);
+                    for (var i in data) {
+
+                        options += "<option id='" + data[i].nom + "'>" + data[i].nom + "</option>";
+                    }
+                    document.getElementById('select').innerHTML = options;
+                }
+            });
+
+        });
+
+        function bernard() {
+            nom = document.getElementById('select2').value;
+            $.ajax({
+                url: "get_data.php?nom=" + nom,
+                method: "GET",
+                success: function (data) {
+                    var data = JSON.parse(data);
+                    var nom = [];
+                    var date = [];
+                    var totaln = [];
+                    var totalb = [];
+                    var idx = [];
+
+                    for (var i in data) {
+                        nom.push(data[i].nom);
+                        date.push(data[i].date);
+                        totaln.push(data[i].totaln);
+                        idx.push(data[i].idx);
+                        totalb.push(data[i].totalb);
+                    }
+
+                    var config = {
+                        type: 'line',
+                        data: {
+                            labels: date,
+
+                            datasets: [{
+                                    label: 'handicap',
+                                    backgroundColor: window.chartColors.purple,
+                                    borderColor: window.chartColors.purple,
+                                    data: idx,
+                                    fill: false,
+                                },
+                                {
+                                    label: 'total brut',
+                                    backgroundColor: window.chartColors.green,
+                                    borderColor: window.chartColors.green,
+                                    data: totalb,
+                                    fill: false,
+                                },
+                                {
+                                    label: 'total net',
+                                    backgroundColor: window.chartColors.blue,
+                                    borderColor: window.chartColors.blue,
+                                    data: totaln,
+                                    fill: false,
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            title: {
+                                display: true,
+                                text: 'Progression golfique de ' + nom[0],
+                                fontSize: 40
+                            },
+                            tooltips: {
+                                mode: 'index',
+                                intersect: false,
+                            },
+                            hover: {
+                                mode: 'nearest',
+                                intersect: true
+                            },
+                            scales: {
+                                xAxes: [{
+                                    scaleLabel: {
+                                        labelString: 'date'
+                                    }
+                                }],
+                                yAxes: [{
+                                    scaleLabel: {
+                                        labelString: 'Value'
+                                    }
+                                }]
+                            }
+                        }
+                    };
+
+                    var ctx = document.getElementById("canvas").getContext("2d");
+                    window.myLine = new Chart(ctx, config);
+                },
+                error: function (data) {
+                    console.log(data);
+                }
+            });
+        };
+    </script>
+
+</body>
+
+</html>
